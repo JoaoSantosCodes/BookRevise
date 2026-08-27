@@ -18,9 +18,36 @@ O histórico permite comparar qualquer versão com a original ou com outra vers�
 
 A geração cria DOCX, PDF, EPUB e relatório Markdown. O EPUB possui um XHTML por capítulo, título, autor, descrição, idioma, data, manifest/spine e capa personalizada quando configurada. O PDF do diff é produzido server-side, armazenado no storage seguro e registrado no histórico de versões.
 
-## Execução local
+## Execução local sem a hospedagem Manus
 
-Use Node.js 22 ou superior e pnpm. Execute `pnpm install`, `pnpm check`, `pnpm test`, `pnpm build` e `pnpm dev`. As variáveis de OAuth, banco, storage e IA não devem ser commitadas.
+A conta Manus não é necessária para compilar, testar ou abrir a interface local. Use Node.js 22 ou superior e pnpm; no Ubuntu, `corepack enable` pode habilitar o gerenciador. Depois de clonar o repositório, execute:
+
+```bash
+pnpm install
+pnpm e2e:fixture
+pnpm check
+pnpm test
+pnpm build
+pnpm dev
+```
+
+Crie um `.env` ou `.env.local` somente na sua máquina e nunca o versione. Para a aplicação funcionar além da página estática, configure um banco MySQL/TiDB acessível, OAuth, storage e o provedor de IA. Os nomes usados pelo código são:
+
+| Variável | Obrigatória para | Observação |
+|---|---|---|
+| `DATABASE_URL` | banco e autenticação | Connection string MySQL/TiDB; execute as migrations `drizzle/*.sql` no banco escolhido. |
+| `JWT_SECRET` | sessões | Segredo aleatório longo; não reutilize em preview e produção. |
+| `VITE_APP_ID` | OAuth | ID da aplicação OAuth. |
+| `OAUTH_SERVER_URL` | callback OAuth | URL base do servidor OAuth. |
+| `VITE_OAUTH_PORTAL_URL` | login no navegador | URL pública do portal OAuth. |
+| `BUILT_IN_FORGE_API_URL` | IA e storage integrados | Endpoint server-side usado pelos helpers existentes. |
+| `BUILT_IN_FORGE_API_KEY` | IA e storage integrados | Chave server-side; nunca expor no frontend. |
+| `VITE_FRONTEND_FORGE_API_URL` | recursos Forge no cliente | Somente se o fluxo frontend correspondente for usado. |
+| `VITE_FRONTEND_FORGE_API_KEY` | recursos Forge no cliente | Não usar para operações privilegiadas. |
+| `OWNER_OPEN_ID` e `OWNER_NAME` | contexto do proprietário | Valores do proprietário da aplicação. |
+| `CRON_SECRET` ou `QUEUE_WORKER_SECRET` | worker `/api/queue` | Obrigatória para chamar o worker com segurança em serverless. |
+
+Se a conta Manus estiver indisponível, substitua `BUILT_IN_FORGE_API_URL/KEY` por uma implementação compatível de IA e storage externo ou mantenha esses recursos desativados; não há fallback seguro que possa ser inventado localmente. Para usar somente a interface e os testes unitários, `pnpm check`, `pnpm test` e `pnpm build` são suficientes. Para E2E autenticado, gere a fixture com `pnpm e2e:fixture`, obtenha um `storageState` real por uma sessão OAuth local e execute `BOOKREVISE_E2E_STORAGE_STATE=/caminho/storage-state.json pnpm e2e`. O teste é pulado de forma segura quando essa variável não existe; cookies nunca devem ser commitados.
 
 ## Deploy no Vercel
 

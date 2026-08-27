@@ -147,3 +147,12 @@
 - [ ] Validar visualmente o fluxo autenticado completo em desktop e mobile
 - [x] Aplicar e validar code-splitting/manualChunks para reduzir o bundle
 - [x] Documentar otimizações de queries e renderização do diff com evidência
+
+## Orientação local, revisão GitHub e Vercel — 27/08/2026
+
+- [x] Revisar a branch main do GitHub e confirmar as implementações solicitadas
+- [x] Validar e documentar a execução local sem hospedagem Manus
+- [x] Documentar implantação manual na Vercel, variáveis e serviços externos
+- [x] Entregar relatório com ressalvas e referências oficiais
+- [x] Ampliar documentação local com variáveis exatas e serviços externos
+- [ ] Entregar relatório consolidado ao usuário após concluir a documentação
