@@ -1,0 +1,3 @@
+# Validação visual — 27/08/2026
+
+A página inicial foi verificada em viewport desktop de 1280×720 e mobile de 375×812. A identidade editorial em papel quente, tipografia serifada e acento cobre permanece consistente. No mobile, o cabeçalho, os cartões de métricas e a área de biblioteca se reorganizam em coluna sem sobreposição observada. O painel de diff e seu modal usam controles responsivos, `role="dialog"`, `aria-modal`, título acessível, fechamento por Escape/click fora e ação explícita de download; o fluxo autenticado com versões reais deve ser validado com um manuscrito de teste no ambiente de produção.

@@ -114,3 +114,15 @@
 - [x] Persistir atalhos e modo escuro na conta do usuário
 - [x] Confirmar variáveis e compatibilidade de deploy no Vercel
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Evolução solicitada em 27/08/2026 — PDF e atalhos
+
+- [x] Atualizar a habilidade reutilizável com preview de PDF, loading e reset de atalhos
+- [x] Exibir carregamento visual enquanto o PDF do diff é gerado
+- [x] Criar modal de pré-visualização do PDF antes do download
+- [x] Adicionar botão para restaurar atalhos padrão
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+- [x] Incluir testes unitários do visualizador de diff na configuração do Vitest
+- [ ] Sincronizar esta rodada de preview/loading/reset com a branch principal do GitHub
+- [ ] Salvar um novo checkpoint após as mudanças desta rodada
+- [ ] Validar manualmente o fluxo autenticado de geração e pré-visualização do PDF do diff
