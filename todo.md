@@ -97,3 +97,11 @@
 - [x] Implementar swipe para navegar entre alterações do diff em mobile
 - [x] Adicionar modo de tela cheia ao visualizador de diff
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Evolução solicitada em 27/08/2026 — diff configurável
+
+- [x] Atualizar a habilidade reutilizável com exportação de diff, atalhos configuráveis e dark mode
+- [x] Adicionar exportação da visualização de diff para PDF ou documento de texto
+- [x] Criar painel para personalizar atalhos do visualizador de diff
+- [x] Adicionar modo escuro ao diff em tela cheia
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão
