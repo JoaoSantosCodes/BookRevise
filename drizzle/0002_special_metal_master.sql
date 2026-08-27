@@ -1,0 +1,1 @@
+ALTER TABLE `books` ADD `manuscriptText` text NOT NULL;

@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root { font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; color: #292723; background: #f8f7f4; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; background: #f8f7f4; }
+button, a, input, textarea { transition: all 180ms cubic-bezier(.23,1,.32,1); }
+button:active { transform: scale(.98); }
+.font-serif { font-family: 'Playfair Display', Georgia, serif; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
