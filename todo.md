@@ -156,3 +156,20 @@
 - [x] Entregar relatório com ressalvas e referências oficiais
 - [x] Ampliar documentação local com variáveis exatas e serviços externos
 - [ ] Entregar relatório consolidado ao usuário após concluir a documentação
+
+## Deploy no Render — 27/08/2026
+
+- [x] Corrigir orientação de Static Site para Web Service full-stack
+- [x] Documentar explicitamente Root Directory, branch, build/start e porta
+- [x] Documentar as variáveis necessárias no Render e seus escopos
+- [x] Documentar worker/cron, segurança de `/api/queue`, banco/storage externos e validação pós-deploy
+- [x] Entregar instruções corrigidas para implantação no Render
+
+## Correção de produção no Render — 27/08/2026
+
+- [ ] Configurar `OAUTH_SERVER_URL` no ambiente Production do Render
+- [x] Configurar variáveis Vite de analytics ou remover o script de analytics quando não houver serviço
+- [ ] Rebuildar e validar o serviço Render após salvar as variáveis
+- [ ] Confirmar que o endpoint público, OAuth e worker funcionam em produção
+- [ ] Sincronizar a correção de analytics opcional com o GitHub
+- [ ] Salvar checkpoint da correção Render após validar o build

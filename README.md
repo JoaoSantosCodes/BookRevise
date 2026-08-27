@@ -53,6 +53,28 @@ Se a conta Manus estiver indisponível, substitua `BUILT_IN_FORGE_API_URL/KEY` p
 
 O repositório inclui `api/index.ts`, `api/queue.ts` e `vercel.json`. **O domínio `bookrevise-esxq6kne.manus.space` é a publicação gerenciada do Manus; ele não cria automaticamente um projeto na conta Vercel.** Para aparecer no Vercel, importe manualmente `https://github.com/JoaoSantosCodes/BookRevise`, selecione a branch `main`, mantenha `pnpm build` como build command e `dist/public` como output directory. Configure no Vercel as variáveis usadas pelo OAuth, banco, storage e IA e defina obrigatoriamente `CRON_SECRET` (ou `QUEUE_WORKER_SECRET` como fallback). O banco e o storage precisam ser externos e acessíveis pelas funções serverless; não use filesystem local para manuscritos. O Cron do Vercel chama `/api/queue` a cada cinco minutos. O hosting gerenciado do Manus continua sendo a opção integrada quando você quiser OAuth, storage, banco e Heartbeat sem configuração externa.
 
+## Deploy no Render
+
+Não escolha **Static Site**. O BookRevise é full-stack: o frontend é servido pelo processo Node e as rotas Express/tRPC, OAuth, banco, storage, IA e `/api/queue` precisam de um servidor. No Render, crie **New → Web Service**, conecte `JoaoSantosCodes/BookRevise`, escolha a branch `main` e deixe o Root Directory vazio (raiz do repositório). Use:
+
+| Campo | Valor |
+|---|---|
+| Service type | Web Service |
+| Runtime | Node |
+| Branch | `main` |
+| Root Directory | vazio |
+| Build Command | `pnpm install --frozen-lockfile && pnpm run build` |
+| Start Command | `pnpm start` |
+| Health Check Path | `/` |
+
+Não preencha **Publish Directory**: esse campo pertence ao Static Site. O script `start` inicia `dist/index.js`, que serve o frontend compilado e a API; o servidor usa a porta fornecida pelo ambiente (`PORT`), portanto não fixe uma porta manualmente. O Render executa build antes do start e pode redeployar automaticamente cada push na branch conectada.
+
+Em **Environment**, adicione `DATABASE_URL`, `JWT_SECRET`, `VITE_APP_ID`, `OAUTH_SERVER_URL`, `VITE_OAUTH_PORTAL_URL`, `BUILT_IN_FORGE_API_URL`, `BUILT_IN_FORGE_API_KEY`, `VITE_FRONTEND_FORGE_API_URL`, `VITE_FRONTEND_FORGE_API_KEY`, `OWNER_OPEN_ID`, `OWNER_NAME` e `CRON_SECRET` ou `QUEUE_WORKER_SECRET`. Use banco MySQL/TiDB e storage externos acessíveis pelo Web Service; execute as migrations `drizzle/*.sql` antes do primeiro uso. Os segredos não devem ser commitados.
+
+Para a fila assíncrona, crie também um **Cron Job** no Render usando o mesmo repositório, agenda `*/5 * * * *` em UTC e um comando que termine, por exemplo: `curl --fail --request POST --header "Authorization: Bearer $CRON_SECRET" "$BOOKREVISE_URL/api/queue"`. Defina `BOOKREVISE_URL` com a URL pública do Web Service e compartilhe `CRON_SECRET` com o Cron Job por Environment Group ou variável segura. Nunca coloque o segredo na URL ou no código.
+
+Após o deploy, verifique página inicial, login/OAuth, upload DOCX, criação e processamento do job, análise, histórico/diff, exportações PDF/EPUB e isolamento entre usuários. Consulte os logs do Web Service e use **Manual Deploy → Deploy latest commit** para repetir uma implantação.
+
 ## Verificação
 
 A suíte cobre autenticação, autorização, validação DOCX, decisões, fila, estados do worker, retries, diff e geração PDF/EPUB. Execute `pnpm check && pnpm test && pnpm build` antes de publicar. Para gerar a fixture DOCX real e executar o E2E autenticado, use `pnpm e2e:fixture` e depois `BOOKREVISE_E2E_STORAGE_STATE=/caminho/storage-state.json pnpm e2e`; o estado de sessão nunca deve ser commitado. A habilidade reutilizável correspondente está em `bookrevise-editorial-workflow/SKILL.md`.
