@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import JSZip from "jszip";
-import { applyDecisions, diffText, makeEpub, makePdf, validateDocx } from "./routers";
+import { applyDecisions, diffText, diffWords, makeEpub, makePdf, validateDocx } from "./routers";
+import { retryDelayMs } from "./db";
 
 describe("review document utilities", () => {
   it("rejects a corrupt or non-DOCX file with a clear result", async () => {
@@ -22,6 +23,16 @@ describe("review document utilities", () => {
     const zip = await JSZip.loadAsync(epub);
     expect(zip.file("mimetype")).toBeTruthy();
     expect(zip.file("OEBPS/content.opf")).toBeTruthy();
+  });
+
+  it("marks additions and removals word by word", () => {
+    expect(diffWords("A casa azul.", "A casa clara.")).toEqual([{ type: "same", text: "A casa " }, { type: "removed", text: "azul." }, { type: "added", text: "clara." }]);
+  });
+
+  it("uses bounded exponential retry delays", () => {
+    expect(retryDelayMs(1)).toBe(60_000);
+    expect(retryDelayMs(2)).toBe(300_000);
+    expect(retryDelayMs(3)).toBe(900_000);
   });
 
   it("marks additions and removals in a version diff", () => {

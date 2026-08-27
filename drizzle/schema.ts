@@ -40,6 +40,7 @@ export const reviewJobs = mysqlTable("reviewJobs", {
   attempts: int("attempts").default(0).notNull(),
   error: text("error"),
   lockedAt: timestamp("lockedAt"),
+  nextAttemptAt: timestamp("nextAttemptAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

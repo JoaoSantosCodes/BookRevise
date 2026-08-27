@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { bookVersions, books, InsertUser, reviewIssues, reviewJobs, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -55,10 +55,14 @@ export async function enqueueReview(bookId: number) { const db = await getDb(); 
 
 export async function getReviewJobForBook(bookId: number) { const db = await getDb(); if (!db) return undefined; const rows = await db.select().from(reviewJobs).where(eq(reviewJobs.bookId, bookId)).orderBy(desc(reviewJobs.createdAt)).limit(1); return rows[0]; }
 
-export async function claimNextReviewJob(bookId?: number) { const db = await getDb(); if (!db) return undefined; const conditions = bookId ? and(eq(reviewJobs.bookId, bookId), eq(reviewJobs.status, "queued")) : eq(reviewJobs.status, "queued"); const queued = await db.select().from(reviewJobs).where(conditions).orderBy(reviewJobs.createdAt).limit(1); const job = queued[0]; if (!job) return undefined; await db.update(reviewJobs).set({ status: "processing", lockedAt: new Date(), attempts: job.attempts + 1 }).where(and(eq(reviewJobs.id, job.id), eq(reviewJobs.status, "queued"))); return { ...job, status: "processing" as const, attempts: job.attempts + 1 };
+export async function claimNextReviewJob(bookId?: number) { const db = await getDb(); if (!db) return undefined; const eligible = and(eq(reviewJobs.status, "queued"), or(isNull(reviewJobs.nextAttemptAt), lte(reviewJobs.nextAttemptAt, new Date()))); const conditions = bookId ? and(eq(reviewJobs.bookId, bookId), eligible) : eligible; const queued = await db.select().from(reviewJobs).where(conditions).orderBy(reviewJobs.createdAt).limit(1); const job = queued[0]; if (!job) return undefined; await db.update(reviewJobs).set({ status: "processing", lockedAt: new Date(), attempts: job.attempts + 1 }).where(and(eq(reviewJobs.id, job.id), eq(reviewJobs.status, "queued"))); return { ...job, status: "processing" as const, attempts: job.attempts + 1 };
 }
 
-export async function finishReviewJob(jobId: number, status: "completed" | "failed", error?: string) { const db = await getDb(); if (!db) return; await db.update(reviewJobs).set({ status, error: error ?? null }).where(eq(reviewJobs.id, jobId)); }
+export async function finishReviewJob(jobId: number, status: "completed" | "failed", error?: string) { const db = await getDb(); if (!db) return; await db.update(reviewJobs).set({ status, error: error ?? null, lockedAt: null, nextAttemptAt: null }).where(eq(reviewJobs.id, jobId)); }
+
+export function retryDelayMs(attempts: number) { return [60_000, 300_000, 900_000][Math.min(Math.max(attempts - 1, 0), 2)] ?? 900_000; }
+
+export async function rescheduleReviewJob(jobId: number, attempts: number, error: string) { const db = await getDb(); if (!db) return { status: "failed" as const }; const retry = attempts < 3; const delay = retryDelayMs(attempts); await db.update(reviewJobs).set({ status: retry ? "queued" : "failed", error, lockedAt: null, nextAttemptAt: retry ? new Date(Date.now() + delay) : null }).where(eq(reviewJobs.id, jobId)); return { status: retry ? "queued" as const : "failed" as const, nextAttemptAt: retry ? new Date(Date.now() + delay) : null }; }
 
 export async function updateIssue(issueId: number, bookId: number, status: "accepted" | "ignored" | "edited", editedText?: string) {
   const db = await getDb(); if (!db) return;

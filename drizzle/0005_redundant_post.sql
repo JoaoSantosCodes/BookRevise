@@ -1,0 +1,1 @@
+ALTER TABLE `reviewJobs` ADD `nextAttemptAt` timestamp;

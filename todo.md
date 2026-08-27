@@ -58,3 +58,12 @@
 - [x] Criar fila persistente e assíncrona para análise de manuscritos longos
 - [x] Preparar configuração e documentação de deploy compatível com Vercel
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Evolução solicitada em 27/08/2026 — diff, editor e retries
+
+- [x] Atualizar a habilidade reutilizável com diff por palavra, editor de EPUB e retry de jobs
+- [x] Implementar diff palavra por palavra no histórico
+- [x] Criar editor visual interativo para capa e organização de capítulos
+- [x] Adicionar retry automático com backoff para análises falhas
+- [x] Exibir estados de erro amigáveis no dashboard
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão

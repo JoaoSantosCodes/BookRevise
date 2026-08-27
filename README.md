@@ -1,31 +1,31 @@
 # BookRevise
 
-O BookRevise é uma plataforma de inteligência editorial para autores que desejam organizar, revisar e preparar manuscritos com segurança. O MVP permite autenticação, biblioteca privada, upload de DOCX, análise editorial estruturada, decisões do autor e geração de versões exportáveis.
+O BookRevise é uma plataforma de inteligência editorial para autores que desejam organizar, revisar e preparar manuscritos com segurança. O MVP oferece autenticação, biblioteca privada, upload de DOCX, análise editorial estruturada, decisões do autor, histórico comparável e exportações editoriais.
 
 ## Arquitetura
 
-A aplicação usa React 19, Vite, Tailwind CSS 4, Express e tRPC. A autenticação é fornecida pelo fluxo OAuth do Manus. O banco MySQL/TiDB usa Drizzle ORM, com tabelas separadas para usuários, livros, problemas editoriais, jobs de análise e versões geradas. Os bytes dos documentos ficam no armazenamento seguro; o banco mantém metadados, referências, texto extraído e conteúdo necessário para diff e exportação.
+A aplicação usa React 19, Vite, Tailwind CSS 4, Express e tRPC. A autenticação é fornecida pelo OAuth do Manus. O banco MySQL/TiDB usa Drizzle ORM, com tabelas separadas para usuários, livros, problemas editoriais, jobs de análise e versões. Os bytes ficam no storage seguro; o banco mantém metadados, referências, conteúdo necessário para geração e texto comparável.
 
-## Revisão assíncrona
+## Fila e retries
 
-O upload valida o DOCX, armazena o original e cria rapidamente um job `queued`. A análise editorial roda separadamente, com estados `queued`, `processing`, `completed` e `failed`; o dashboard consulta o status e exibe progresso indeterminado sem inventar percentual. Em produção, o worker pode ser acionado pela rota `GET/POST /api/queue`, protegida por `QUEUE_WORKER_SECRET`. A configuração `vercel.json` inclui Vercel Cron a cada cinco minutos. Para cargas maiores, recomenda-se trocar o acionamento por uma fila gerenciada externa sem alterar o contrato do job.
+O upload cria rapidamente um job persistente `queued`. Um worker protegido em `/api/queue` é chamado pelo cron e reivindica um job com lease. A análise passa por `processing`, `completed` ou `failed`. Falhas transitórias retornam automaticamente para `queued` com backoff de 1, 5 e 15 minutos, até três tentativas. O dashboard consulta o status e exibe mensagens amigáveis sem expor detalhes técnicos. A interface nunca executa análise longa diretamente no clique do usuário.
 
-## Exportações e histórico
+## Diff e editor editorial
 
-A geração de uma revisão cria DOCX, PDF, EPUB e relatório Markdown. O EPUB preserva capítulos detectados por títulos como “Capítulo 1”, inclui título, autor, descrição, idioma e capa JPEG/PNG opcional. O dashboard lista todos os artefatos por versão e oferece comparação visual por linhas entre o manuscrito original e qualquer versão gerada, distinguindo adições, remoções e linhas preservadas.
+O histórico permite comparar qualquer versão com a original ou com outra versão. O modo atual é **palavra por palavra**, preservando espaços e pontuação e distinguindo adições e remoções com cores e legenda acessível. O editor visual permite atualizar autor, descrição, idioma, capa JPEG/PNG, títulos de capítulos, texto de capítulos e sua ordem antes da exportação.
+
+## Exportações
+
+A geração cria DOCX, PDF, EPUB e relatório Markdown. O EPUB possui um XHTML por capítulo, título, autor, descrição, idioma, data, manifest/spine e capa personalizada quando configurada.
 
 ## Execução local
 
-Use Node.js 22 ou superior e pnpm. Instale as dependências com `pnpm install`; valide os tipos com `pnpm check`; execute os testes com `pnpm test`; gere o build com `pnpm build`; e inicialize o servidor com `pnpm dev`. As variáveis de ambiente de autenticação, banco, armazenamento e IA são injetadas pelo ambiente Manus e não devem ser commitadas.
+Use Node.js 22 ou superior e pnpm. Execute `pnpm install`, `pnpm check`, `pnpm test`, `pnpm build` e `pnpm dev`. As variáveis de OAuth, banco, storage e IA não devem ser commitadas.
 
 ## Deploy no Vercel
 
-O repositório inclui `api/index.ts`, `api/queue.ts` e `vercel.json` para uma implantação baseada em funções Node. Configure no projeto Vercel as variáveis usadas pelo OAuth, banco, storage e IA, além de `QUEUE_WORKER_SECRET`. O banco e o storage precisam ser serviços acessíveis externamente; não use filesystem local para documentos. O Cron do Vercel chama `/api/queue`, que deve permanecer idempotente e protegido pelo segredo. O hosting gerenciado do Manus continua sendo a opção integrada quando você quiser OAuth, storage, banco e Heartbeat sem configurar serviços externos; Vercel é uma alternativa compatível, mas exige essa configuração adicional.
-
-## Fluxo do usuário
-
-O usuário autentica-se e acessa uma biblioteca privada. Ao criar um manuscrito, informa título, autor, descrição e uma capa opcional, então escolhe um DOCX. O servidor valida, armazena, extrai e enfileira o conteúdo. O dashboard acompanha a análise, exibe palavras, score de saúde e problemas filtráveis. Cada sugestão pode ser aceita, editada ou ignorada. Depois, o autor gera e baixa as versões revisadas e compara alterações no histórico.
+O repositório inclui `api/index.ts`, `api/queue.ts` e `vercel.json`. Configure no Vercel as variáveis usadas pelo OAuth, banco, storage e IA e defina `QUEUE_WORKER_SECRET`. O banco e o storage precisam ser externos e acessíveis pelas funções serverless; não use filesystem local para manuscritos. O Cron do Vercel chama `/api/queue` a cada cinco minutos. O hosting gerenciado do Manus continua sendo a opção integrada quando você quiser OAuth, storage, banco e Heartbeat sem configuração externa.
 
 ## Verificação
 
-A suíte atual cobre autenticação, autorização, validação DOCX, decisões, fila de criação, geração de PDF/EPUB e diff. Execute `pnpm check && pnpm test && pnpm build` antes de publicar. A habilidade reutilizável correspondente está em `bookrevise-editorial-workflow/SKILL.md` no pacote entregue ao usuário.
+A suíte cobre autenticação, autorização, validação DOCX, decisões, fila, estados do worker, retries, diff e geração PDF/EPUB. Execute `pnpm check && pnpm test && pnpm build` antes de publicar. A habilidade reutilizável correspondente está em `bookrevise-editorial-workflow/SKILL.md`.
