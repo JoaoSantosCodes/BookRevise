@@ -10,6 +10,7 @@ vi.mock("./db", () => ({
   listIssues: vi.fn(async () => [{ id: 1, bookId: 9, category: "style", severity: "suggestion", title: "Clareza", originalText: "casa azul", suggestedText: "casa clara", explanation: "Melhora o ritmo.", context: "A casa azul.", status: "accepted", editedText: null }]),
   listBooks: vi.fn(async () => []),
   listVersions: vi.fn(async () => []),
+  getReviewJobForBook: vi.fn(async () => ({ id: 4, bookId: 9, status: "failed", attempts: 3, error: "Falha", lockedAt: null, nextAttemptAt: null, createdAt: new Date(), updatedAt: new Date() })),
   enqueueReview: vi.fn(async () => 1),
   updateIssue: vi.fn(async () => undefined),
   books: { id: "books.id" },
@@ -23,7 +24,7 @@ import JSZip from "jszip";
 import { Document, Paragraph, Packer } from "docx";
 import { appRouter } from "./routers";
 import { invokeLLM } from "./_core/llm";
-import { updateIssue } from "./db";
+import { getReviewJobForBook, updateIssue, enqueueReview } from "./db";
 import type { TrpcContext } from "./_core/context";
 
 const ctx = { user: { id: 1, openId: "author", name: "Autor", email: "a@b.com", loginMethod: "manus", role: "user", createdAt: new Date(), updatedAt: new Date(), lastSignedIn: new Date() }, req: {} as TrpcContext["req"], res: {} as TrpcContext["res"] } satisfies TrpcContext;
@@ -52,6 +53,12 @@ describe("book mutations", () => {
     const result = await appRouter.createCaller(ctx).books.create({ title: "Falha", filename: "falha.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data });
     expect(result.queued).toBe(true);
     expect(invokeLLM).not.toHaveBeenCalled();
+  });
+  it("requeues a failed analysis when the author retries manually", async () => {
+    const result = await appRouter.createCaller(ctx).books.retryReview({ bookId: 9 });
+    expect(result.queued).toBe(true);
+    expect(vi.mocked(getReviewJobForBook)).toHaveBeenCalledWith(9);
+    expect(vi.mocked(enqueueReview)).toHaveBeenCalledWith(9);
   });
   it("persists an author decision for an issue", async () => {
     const result = await appRouter.createCaller(ctx).books.updateIssue({ bookId: 9, issueId: 1, status: "edited", editedText: "casa clara" });

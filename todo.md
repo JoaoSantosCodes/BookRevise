@@ -67,3 +67,11 @@
 - [x] Adicionar retry automático com backoff para análises falhas
 - [x] Exibir estados de erro amigáveis no dashboard
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Evolução solicitada em 27/08/2026 — interação editorial
+
+- [x] Atualizar a habilidade reutilizável com drag-and-drop, retry manual e navegação de diff
+- [x] Adicionar arrastar e soltar acessível para reordenar capítulos
+- [x] Adicionar botão de repetição manual para análises falhas
+- [x] Adicionar navegação entre alterações no diff
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão

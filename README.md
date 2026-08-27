@@ -8,11 +8,11 @@ A aplicação usa React 19, Vite, Tailwind CSS 4, Express e tRPC. A autenticaç�
 
 ## Fila e retries
 
-O upload cria rapidamente um job persistente `queued`. Um worker protegido em `/api/queue` é chamado pelo cron e reivindica um job com lease. A análise passa por `processing`, `completed` ou `failed`. Falhas transitórias retornam automaticamente para `queued` com backoff de 1, 5 e 15 minutos, até três tentativas. O dashboard consulta o status e exibe mensagens amigáveis sem expor detalhes técnicos. A interface nunca executa análise longa diretamente no clique do usuário.
+O upload cria rapidamente um job persistente `queued`. Um worker protegido em `/api/queue` é chamado pelo cron e reivindica um job com lease. A análise passa por `processing`, `completed` ou `failed`. Falhas transitórias retornam automaticamente para `queued` com backoff de 1, 5 e 15 minutos, até três tentativas. O dashboard consulta o status e exibe mensagens amigáveis sem expor detalhes técnicos. Em uma falha terminal, o autor pode usar o botão de repetição manual, que apenas cria um novo job e também não executa a IA no clique.
 
 ## Diff e editor editorial
 
-O histórico permite comparar qualquer versão com a original ou com outra versão. O modo atual é **palavra por palavra**, preservando espaços e pontuação e distinguindo adições e remoções com cores e legenda acessível. O editor visual permite atualizar autor, descrição, idioma, capa JPEG/PNG, títulos de capítulos, texto de capítulos e sua ordem antes da exportação.
+O histórico permite comparar qualquer versão com a original ou com outra versão. O modo atual é **palavra por palavra**, preservando espaços e pontuação e distinguindo adições e remoções com cores, legenda acessível e navegação entre ocorrências. O editor visual permite atualizar autor, descrição, idioma, capa JPEG/PNG, títulos de capítulos, texto de capítulos e sua ordem antes da exportação. Os capítulos podem ser reorganizados por drag-and-drop ou pelos controles acessíveis de mover para cima/baixo.
 
 ## Exportações
 
