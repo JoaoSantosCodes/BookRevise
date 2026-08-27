@@ -133,4 +133,17 @@
 - [x] Criar teste E2E autenticado usando um arquivo DOCX real, cobrindo upload, geração de versões, histórico, diff e preview PDF
 - [x] Permitir comentários e destaques associados a trechos no modal do PDF, com persistência autenticada por versão
 - [x] Investigar por que o projeto não aparece no Vercel e documentar o diagnóstico
-- [ ] Testar, validar visualmente, sincronizar e salvar a nova versão
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+- [ ] Salvar e publicar um novo checkpoint após as mudanças desta rodada
+- [ ] Validar visualmente o fluxo autenticado alterado com histórico, diff paginado e modal de anotações
+
+## Auditoria e otimização solicitada em 27/08/2026
+
+- [x] Investigar a tela preta no preview/modal e erros de runtime
+- [x] Revisar layout desktop/mobile, hierarquia visual e acessibilidade
+- [x] Otimizar performance de diff, bundle, queries e renderização
+- [x] Validar testes, build, logs e screenshots após as melhorias
+- [ ] Sincronizar e salvar a versão auditada
+- [ ] Validar visualmente o fluxo autenticado completo em desktop e mobile
+- [x] Aplicar e validar code-splitting/manualChunks para reduzir o bundle
+- [x] Documentar otimizações de queries e renderização do diff com evidência

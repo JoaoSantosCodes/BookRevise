@@ -17,16 +17,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { DEFAULT_SHORTCUTS, getDiffPage, hasShortcutConflict, type Shortcuts } from "./versionHistoryUtils";
 
 type Version = { id: number; kind: string; filename: string; fileUrl: string; versionNumber: number; createdAt: Date };
 type Segment = { type: "same" | "added" | "removed"; text: string };
-type Shortcuts = { previous: string; next: string; first: string; last: string };
 type Annotation = { id: number; kind: "highlight" | "comment"; excerpt: string; note: string; color: string };
 
-export const DEFAULT_SHORTCUTS: Shortcuts = { previous: "ArrowLeft", next: "ArrowRight", first: "Home", last: "End" };
-export function hasShortcutConflict(shortcuts: Shortcuts) { const values = Object.values(shortcuts); return new Set(values).size !== values.length; }
 const PAGE_SIZE = 120;
-export function getDiffPage<T>(segments: T[], page: number, pageSize = PAGE_SIZE) { const totalPages = Math.max(1, Math.ceil(segments.length / pageSize)); const safePage = Math.min(Math.max(page, 0), totalPages - 1); return { page: safePage, totalPages, items: segments.slice(safePage * pageSize, (safePage + 1) * pageSize) }; }
 const labels: Record<string, string> = { manuscript: "DOCX revisado", pdf: "PDF revisado", epub: "EPUB revisado", report: "Relatório" };
 
 export default function VersionHistoryPanel({ bookId, versions }: { bookId: number; versions: Version[] }) {
@@ -51,17 +48,18 @@ export default function VersionHistoryPanel({ bookId, versions }: { bookId: numb
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const preferences = trpc.auth.preferences.useQuery();
   const savePreferences = trpc.auth.savePreferences.useMutation({ onError: error => toast.error(error.message) });
-  const annotationsQuery = trpc.books.listDiffAnnotations.useQuery({ bookId, versionId: toId ?? 0 }, { enabled: !!previewUrl && !!toId }); const createAnnotation = trpc.books.createDiffAnnotation.useMutation({ onSuccess: annotation => { setAnnotations(current => [...current, annotation as Annotation]); annotationsQuery.refetch(); }, onError: error => toast.error(error.message) }); const deleteAnnotation = trpc.books.deleteDiffAnnotation.useMutation({ onSuccess: (_, input) => setAnnotations(current => current.filter(annotation => annotation.id !== input.annotationId)), onError: error => toast.error(error.message) });
+  const annotationInput = useMemo(() => ({ bookId, versionId: toId ?? 0 }), [bookId, toId]); const annotationsQuery = trpc.books.listDiffAnnotations.useQuery(annotationInput, { enabled: !!previewUrl && !!toId }); const createAnnotation = trpc.books.createDiffAnnotation.useMutation({ onSuccess: annotation => { setAnnotations(current => [...current, annotation as Annotation]); annotationsQuery.refetch(); }, onError: error => toast.error(error.message) }); const deleteAnnotation = trpc.books.deleteDiffAnnotation.useMutation({ onSuccess: (_, input) => setAnnotations(current => current.filter(annotation => annotation.id !== input.annotationId)), onError: error => toast.error(error.message) });
   const exportPdf = trpc.books.exportDiffPdf.useMutation({
     onSuccess: file => { setPreviewUrl(file.url); setAnnotations([]); toast.success("PDF do diff pronto para visualização."); },
     onError: error => toast.error(error.message),
   });
-  const comparison = trpc.books.compareVersions.useQuery({ bookId, fromVersionId: fromId, toVersionId: toId ?? 0, mode: "word" }, { enabled: !!toId });
+  const comparisonInput = useMemo(() => ({ bookId, fromVersionId: fromId, toVersionId: toId ?? 0, mode: "word" as const }), [bookId, fromId, toId]); const comparison = trpc.books.compareVersions.useQuery(comparisonInput, { enabled: !!toId });
   const segments = (comparison.data?.segments ?? []) as Segment[];
   const changeIndices = useMemo(() => segments.map((segment, index) => segment.type === "same" ? -1 : index).filter(index => index >= 0), [segments]);
-  const pageCount = Math.max(1, Math.ceil(segments.length / PAGE_SIZE));
-  const pageSegments = segments.slice(diffPage * PAGE_SIZE, (diffPage + 1) * PAGE_SIZE);
-  const pageStart = diffPage * PAGE_SIZE;
+  const paginated = getDiffPage(segments, diffPage, PAGE_SIZE);
+  const pageCount = paginated.totalPages;
+  const pageSegments = paginated.items;
+  const pageStart = paginated.page * PAGE_SIZE;
   const shortcutConflict = hasShortcutConflict(shortcuts);
 
   useEffect(() => { if (!preferences.data) return; setShortcuts(preferences.data.shortcuts); setDarkMode(preferences.data.darkMode); setHydrated(true); }, [preferences.data]); useEffect(() => { if (annotationsQuery.data) setAnnotations(annotationsQuery.data as Annotation[]); }, [annotationsQuery.data]);

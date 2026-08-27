@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_SHORTCUTS, getDiffPage, hasShortcutConflict } from "./VersionHistoryPanel";
+import { DEFAULT_SHORTCUTS, getDiffPage, hasShortcutConflict } from "./versionHistoryUtils";
 
 describe("VersionHistoryPanel shortcut preferences", () => {
   it("exposes the editorial diff defaults", () => {
