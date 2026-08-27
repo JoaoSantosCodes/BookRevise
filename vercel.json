@@ -3,6 +3,7 @@
   "outputDirectory": "dist/public",
   "framework": null,
   "rewrites": [
+    { "source": "/api/queue", "destination": "/api/queue" },
     { "source": "/api/(.*)", "destination": "/api/index" }
   ],
   "functions": {

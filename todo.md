@@ -105,3 +105,12 @@
 - [x] Criar painel para personalizar atalhos do visualizador de diff
 - [x] Adicionar modo escuro ao diff em tela cheia
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Evolução solicitada em 27/08/2026 — PDF e preferências de conta
+
+- [x] Atualizar a habilidade reutilizável com PDF server-side, conflitos e preferências de conta
+- [x] Implementar exportação server-side do diff para PDF
+- [x] Validar e impedir conflitos entre atalhos configurados
+- [x] Persistir atalhos e modo escuro na conta do usuário
+- [x] Confirmar variáveis e compatibilidade de deploy no Vercel
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão

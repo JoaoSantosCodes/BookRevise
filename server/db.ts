@@ -31,6 +31,16 @@ export async function getUserByOpenId(openId: string) {
   const rows = await db.select().from(users).where(eq(users.openId, openId)).limit(1); return rows[0];
 }
 
+export async function updateUserPreferences(openId: string, preferences: string) {
+  const db = await getDb(); if (!db) throw new Error("Banco indisponível");
+  await db.update(users).set({ diffPreferences: preferences }).where(eq(users.openId, openId));
+}
+
+export async function getUserPreferences(openId: string) {
+  const user = await getUserByOpenId(openId);
+  return user?.diffPreferences ?? null;
+}
+
 export async function listBooks(userId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(books).where(eq(books.userId, userId)).orderBy(desc(books.updatedAt));
