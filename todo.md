@@ -171,5 +171,7 @@
 - [x] Configurar variáveis Vite de analytics ou remover o script de analytics quando não houver serviço
 - [ ] Rebuildar e validar o serviço Render após salvar as variáveis
 - [ ] Confirmar que o endpoint público, OAuth e worker funcionam em produção
-- [ ] Sincronizar a correção de analytics opcional com o GitHub
+- [ ] Sincronizar corretamente `client/index.html` e `client/src/main.tsx` na branch main
+- [ ] Verificar no clone limpo do GitHub os arquivos client corretos
+- [ ] Rebuildar o Render e confirmar remoção dos warnings de analytics
 - [ ] Salvar checkpoint da correção Render após validar o build
