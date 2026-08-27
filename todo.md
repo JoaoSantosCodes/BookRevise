@@ -75,3 +75,17 @@
 - [x] Adicionar botão de repetição manual para análises falhas
 - [x] Adicionar navegação entre alterações no diff
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Evolução solicitada em 27/08/2026 — acessibilidade e touch
+
+- [x] Atualizar a habilidade reutilizável com atalhos, touch e diagnóstico de retry
+- [x] Adicionar atalhos de teclado para navegar entre alterações do diff
+- [x] Otimizar reordenação de capítulos para toque em dispositivos móveis
+- [x] Exibir o motivo detalhado da falha antes do retry manual
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão
+
+## Correções finais da rodada de acessibilidade
+
+- [x] Implementar reordenação touch-first com pointer events e alvo visual de inserção
+- [x] Validar visualmente a versão final em desktop e mobile após o ajuste touch
+- [x] Sincronizar esta rodada com o GitHub e salvar checkpoint final após o push
