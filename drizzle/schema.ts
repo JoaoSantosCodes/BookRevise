@@ -25,6 +25,23 @@ export const books = mysqlTable("books", {
   healthScore: int("healthScore").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  author: varchar("author", { length: 255 }),
+  description: text("description"),
+  language: varchar("language", { length: 16 }).default("pt-BR").notNull(),
+  chapters: text("chapters"),
+  coverKey: text("coverKey"),
+  coverUrl: text("coverUrl"),
+});
+
+export const reviewJobs = mysqlTable("reviewJobs", {
+  id: int("id").autoincrement().primaryKey(),
+  bookId: int("bookId").notNull(),
+  status: mysqlEnum("status", ["queued", "processing", "completed", "failed"]).default("queued").notNull(),
+  attempts: int("attempts").default(0).notNull(),
+  error: text("error"),
+  lockedAt: timestamp("lockedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export const reviewIssues = mysqlTable("reviewIssues", {
@@ -50,6 +67,9 @@ export const bookVersions = mysqlTable("bookVersions", {
   filename: varchar("filename", { length: 255 }).notNull(),
   fileKey: text("fileKey").notNull(),
   fileUrl: text("fileUrl").notNull(),
+  versionNumber: int("versionNumber").default(1).notNull(),
+  contentText: text("contentText"),
+  baseVersionId: int("baseVersionId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -58,3 +78,4 @@ export type InsertUser = typeof users.$inferInsert;
 export type Book = typeof books.$inferSelect;
 export type ReviewIssue = typeof reviewIssues.$inferSelect;
 export type BookVersion = typeof bookVersions.$inferSelect;
+export type ReviewJob = typeof reviewJobs.$inferSelect;

@@ -9,6 +9,8 @@ vi.mock("./db", () => ({
   getBookForUser: vi.fn(async (id: number) => id === 9 ? { id: 9, userId: 1, title: "Livro", filename: "livro.docx", fileKey: "k", fileUrl: "/file", manuscriptText: "A casa azul.", wordCount: 3, healthScore: 92, status: "ready" } : undefined),
   listIssues: vi.fn(async () => [{ id: 1, bookId: 9, category: "style", severity: "suggestion", title: "Clareza", originalText: "casa azul", suggestedText: "casa clara", explanation: "Melhora o ritmo.", context: "A casa azul.", status: "accepted", editedText: null }]),
   listBooks: vi.fn(async () => []),
+  listVersions: vi.fn(async () => []),
+  enqueueReview: vi.fn(async () => 1),
   updateIssue: vi.fn(async () => undefined),
   books: { id: "books.id" },
   reviewIssues: {},
@@ -37,6 +39,7 @@ describe("book mutations", () => {
     const data = await validDocx("Um capítulo de teste.");
     const result = await appRouter.createCaller(ctx).books.create({ title: "Livro válido", filename: "livro.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data });
     expect(result.id).toBe(9);
+    expect(result.queued).toBe(true);
     expect(dbMock.insert).toHaveBeenCalled();
   });
   it("rejects a manuscript over the 8 MB limit", async () => {
@@ -46,8 +49,9 @@ describe("book mutations", () => {
   it("marks analysis failure instead of returning a healthy result", async () => {
     vi.mocked(invokeLLM).mockRejectedValueOnce(new Error("provider unavailable"));
     const data = await validDocx("Texto.");
-    await expect(appRouter.createCaller(ctx).books.create({ title: "Falha", filename: "falha.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data })).rejects.toThrow("análise editorial");
-    expect(dbMock.update).toHaveBeenCalled();
+    const result = await appRouter.createCaller(ctx).books.create({ title: "Falha", filename: "falha.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data });
+    expect(result.queued).toBe(true);
+    expect(invokeLLM).not.toHaveBeenCalled();
   });
   it("persists an author decision for an issue", async () => {
     const result = await appRouter.createCaller(ctx).books.updateIssue({ bookId: 9, issueId: 1, status: "edited", editedText: "casa clara" });

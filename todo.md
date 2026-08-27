@@ -48,4 +48,13 @@
 - [x] Adicionar exportação de manuscritos revisados em EPUB
 - [x] Implementar histórico de versões no dashboard
 - [x] Adicionar progresso visual durante a análise editorial da IA
-- [ ] Validar habilidade, testes, layout e sincronização da nova versão
+- [x] Validar habilidade, testes, layout e sincronização da nova versão
+
+## Evolução solicitada em 27/08/2026 — fila e publicação
+
+- [x] Atualizar a habilidade reutilizável com diff, EPUB editorial, fila assíncrona e Vercel
+- [x] Implementar visualização de diff entre versões no histórico
+- [x] Adicionar capítulos, metadados editoriais e capa personalizada ao EPUB
+- [x] Criar fila persistente e assíncrona para análise de manuscritos longos
+- [x] Preparar configuração e documentação de deploy compatível com Vercel
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão
