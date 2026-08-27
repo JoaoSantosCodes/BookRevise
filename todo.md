@@ -17,7 +17,7 @@
 - [x] Testes unitários do backend e fluxos principais
 - [x] Verificação visual em desktop e mobile
 - [x] Documentação de execução e arquitetura
-- [ ] Publicar o projeto no repositório GitHub JoaoSantosCodes/BookRevise
+- [x] Publicar o projeto no repositório GitHub JoaoSantosCodes/BookRevise
 
 ## Ajustes de qualidade identificados
 
