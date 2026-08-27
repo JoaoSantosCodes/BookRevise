@@ -22,6 +22,13 @@
       "when": 1787853531085,
       "tag": "0002_special_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787854222717,
+      "tag": "0003_same_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

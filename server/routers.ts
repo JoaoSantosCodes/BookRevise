@@ -2,6 +2,8 @@ import { z } from "zod";
 import mammoth from "mammoth";
 import JSZip from "jszip";
 import { Document, Packer, Paragraph, TextRun } from "docx";
+import PDFDocument from "pdfkit";
+import { listVersions } from "./db";
 import { eq } from "drizzle-orm";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -35,6 +37,21 @@ export async function extractText(buffer: Buffer) {
   return result.value.replace(/\s+/g, " ").trim();
 }
 
+function escapeXml(value: string) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+export async function makePdf(title: string, text: string) {
+  const doc = new PDFDocument({ margin: 56, size: "A4" }); const chunks: Buffer[] = []; doc.on("data", chunk => chunks.push(chunk));
+  const done = new Promise<Buffer>((resolve, reject) => { doc.on("end", () => resolve(Buffer.concat(chunks))); doc.on("error", reject); });
+  doc.fontSize(24).font("Times-Bold").text(title, { align: "center" }).moveDown(2); doc.fontSize(12).font("Times-Roman");
+  for (const paragraph of text.split(/\n+/)) doc.text(paragraph, { align: "left", lineGap: 4 }).moveDown(.7);
+  doc.end(); return done;
+}
+
+export async function makeEpub(title: string, text: string) {
+  const zip = new JSZip(); zip.file("mimetype", "application/epub+zip", { compression: "STORE" }); zip.folder("META-INF")?.file("container.xml", "<?xml version=\"1.0\"?><container version=\"1.0\" xmlns=\"urn:oasis:names:tc:opendocument:xmlns:container\"><rootfiles><rootfile full-path=\"OEBPS/content.opf\" media-type=\"application/oebps-package+xml\"/></rootfiles></container>");
+  const paras = text.split(/\n+/).map(p => `<p>${escapeXml(p)}</p>`).join(""); zip.folder("OEBPS")?.file("chapter.xhtml", `<?xml version=\"1.0\" encoding=\"UTF-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>${escapeXml(title)}</title></head><body><h1>${escapeXml(title)}</h1>${paras}</body></html>`); zip.folder("OEBPS")?.file("content.opf", `<?xml version=\"1.0\" encoding=\"UTF-8\"?><package xmlns=\"http://www.idpf.org/2007/opf\" version=\"3.0\" unique-identifier=\"book-id\"><metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:identifier id=\"book-id\">bookrevise-${Date.now()}</dc:identifier><dc:title>${escapeXml(title)}</dc:title><dc:language>pt-BR</dc:language></metadata><manifest><item id=\"chapter\" href=\"chapter.xhtml\" media-type=\"application/xhtml+xml\"/></manifest><spine><itemref idref=\"chapter\"/></spine></package>`); return zip.generateAsync({ type: "nodebuffer" });
+}
+
 export function applyDecisions(text: string, issues: Array<{ status: string; originalText: string; suggestedText: string; editedText: string | null }>) {
   let revised = text;
   for (const issue of issues) { if (issue.status === "accepted") revised = revised.split(issue.originalText).join(issue.suggestedText); if (issue.status === "edited" && issue.editedText) revised = revised.split(issue.originalText).join(issue.editedText); }
@@ -51,7 +68,7 @@ export const appRouter = router({
     list: protectedProcedure.query(({ ctx }) => listBooks(ctx.user.id)),
     get: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
       const book = await getBookForUser(input.id, ctx.user.id); if (!book) throw new Error("Livro não encontrado");
-      return { book, issues: await listIssues(book.id) };
+      return { book, issues: await listIssues(book.id), versions: await listVersions(book.id) };
     }),
     create: protectedProcedure.input(z.object({ title: z.string().min(1).max(120), filename: z.string().regex(/\.docx$/i), mimeType: z.string(), data: z.string().max(12_000_000) })).mutation(async ({ ctx, input }) => {
       const db = await getDb(); if (!db) throw new Error("Banco de dados indisponível");
@@ -77,13 +94,15 @@ export const appRouter = router({
       const book = await getBookForUser(input.bookId, ctx.user.id); if (!book) throw new Error("Livro não encontrado");
       const issues = await listIssues(book.id); const revised = applyDecisions(book.manuscriptText, issues);
       const doc = new Document({ sections: [{ children: revised.split(/\n+/).map(line => new Paragraph({ children: [new TextRun(line)] })) }] });
-      const docBuffer = await Packer.toBuffer(doc); const report = [`# Relatório de revisão — ${book.title}`, `\nSaúde do manuscrito: ${book.healthScore}/100`, `Palavras: ${book.wordCount}`, "", ...issues.map((i, n) => `## ${n + 1}. ${i.title}\nStatus: ${i.status}\nCategoria: ${i.category} · Severidade: ${i.severity}\n\nContexto: ${i.context}\n\nSugestão: ${i.suggestedText}\n\n${i.explanation}`)].join("\n");
+      const docBuffer = await Packer.toBuffer(doc); const pdfBuffer = await makePdf(book.title, revised); const epubBuffer = await makeEpub(book.title, revised); const report = [`# Relatório de revisão — ${book.title}`, `\nSaúde do manuscrito: ${book.healthScore}/100`, `Palavras: ${book.wordCount}`, "", ...issues.map((i, n) => `## ${n + 1}. ${i.title}\nStatus: ${i.status}\nCategoria: ${i.category} · Severidade: ${i.severity}\n\nContexto: ${i.context}\n\nSugestão: ${i.suggestedText}\n\n${i.explanation}`)].join("\n");
       const revisedUpload = await storagePut(`${ctx.user.id}/versions/${book.title}-revisado.docx`, docBuffer, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      const pdfUpload = await storagePut(`${ctx.user.id}/versions/${book.title}-revisado.pdf`, pdfBuffer, "application/pdf");
+      const epubUpload = await storagePut(`${ctx.user.id}/versions/${book.title}-revisado.epub`, epubBuffer, "application/epub+zip");
       const reportUpload = await storagePut(`${ctx.user.id}/versions/${book.title}-relatorio.md`, report, "text/markdown"); const db = await getDb(); if (!db) throw new Error("Banco indisponível");
-      await db.insert(bookVersions).values([{ bookId: book.id, kind: "manuscript", filename: `${book.title}-revisado.docx`, fileKey: revisedUpload.key, fileUrl: revisedUpload.url }, { bookId: book.id, kind: "report", filename: `${book.title}-relatorio.md`, fileKey: reportUpload.key, fileUrl: reportUpload.url }]);
-      await db.update(books).set({ status: "reviewed" }).where(eq(books.id, book.id)); return { revised: revisedUpload, report: reportUpload };
+      await db.insert(bookVersions).values([{ bookId: book.id, kind: "manuscript", filename: `${book.title}-revisado.docx`, fileKey: revisedUpload.key, fileUrl: revisedUpload.url }, { bookId: book.id, kind: "pdf", filename: `${book.title}-revisado.pdf`, fileKey: pdfUpload.key, fileUrl: pdfUpload.url }, { bookId: book.id, kind: "epub", filename: `${book.title}-revisado.epub`, fileKey: epubUpload.key, fileUrl: epubUpload.url }, { bookId: book.id, kind: "report", filename: `${book.title}-relatorio.md`, fileKey: reportUpload.key, fileUrl: reportUpload.url }]);
+      await db.update(books).set({ status: "reviewed" }).where(eq(books.id, book.id)); return { revised: revisedUpload, pdf: pdfUpload, epub: epubUpload, report: reportUpload };
     }),
-    createVersion: protectedProcedure.input(z.object({ bookId: z.number(), kind: z.enum(["manuscript", "report"]), data: z.string(), filename: z.string() })).mutation(async ({ ctx, input }) => { const book = await getBookForUser(input.bookId, ctx.user.id); if (!book) throw new Error("Livro não encontrado"); const uploaded = await storagePut(`${ctx.user.id}/versions/${input.filename}`, Buffer.from(input.data, "base64"), input.kind === "report" ? "text/markdown" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"); const db = await getDb(); if (!db) throw new Error("Banco indisponível"); await db.insert(bookVersions).values({ bookId: book.id, kind: input.kind, filename: input.filename, fileKey: uploaded.key, fileUrl: uploaded.url }); return uploaded; }),
+    createVersion: protectedProcedure.input(z.object({ bookId: z.number(), kind: z.enum(["manuscript", "pdf", "epub", "report"]), data: z.string(), filename: z.string() })).mutation(async ({ ctx, input }) => { const book = await getBookForUser(input.bookId, ctx.user.id); if (!book) throw new Error("Livro não encontrado"); const uploaded = await storagePut(`${ctx.user.id}/versions/${input.filename}`, Buffer.from(input.data, "base64"), input.kind === "report" ? "text/markdown" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document"); const db = await getDb(); if (!db) throw new Error("Banco indisponível"); await db.insert(bookVersions).values({ bookId: book.id, kind: input.kind, filename: input.filename, fileKey: uploaded.key, fileUrl: uploaded.url }); return uploaded; }),
   }),
 });
 

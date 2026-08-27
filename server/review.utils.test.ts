@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import JSZip from "jszip";
-import { applyDecisions, validateDocx } from "./routers";
+import { applyDecisions, makeEpub, makePdf, validateDocx } from "./routers";
 
 describe("review document utilities", () => {
   it("rejects a corrupt or non-DOCX file with a clear result", async () => {
@@ -13,6 +13,15 @@ describe("review document utilities", () => {
     zip.file("word/document.xml", "<document />");
     const buffer = await zip.generateAsync({ type: "nodebuffer" });
     await expect(validateDocx(buffer)).resolves.toEqual({ valid: true });
+  });
+
+  it("generates PDF and EPUB artifacts", async () => {
+    const pdf = await makePdf("Livro", "Um parágrafo.");
+    expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+    const epub = await makeEpub("Livro", "Um parágrafo.");
+    const zip = await JSZip.loadAsync(epub);
+    expect(zip.file("mimetype")).toBeTruthy();
+    expect(zip.file("OEBPS/content.opf")).toBeTruthy();
   });
 
   it("only applies accepted and edited suggestions", () => {

@@ -9,3 +9,5 @@ button, a, input, textarea { transition: all 180ms cubic-bezier(.23,1,.32,1); }
 button:active { transform: scale(.98); }
 .font-serif { font-family: 'Playfair Display', Georgia, serif; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+@keyframes progress { 0% { transform: translateX(-120%); } 50% { transform: translateX(120%); } 100% { transform: translateX(300%); } }

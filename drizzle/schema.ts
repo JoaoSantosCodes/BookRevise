@@ -46,7 +46,7 @@ export const reviewIssues = mysqlTable("reviewIssues", {
 export const bookVersions = mysqlTable("bookVersions", {
   id: int("id").autoincrement().primaryKey(),
   bookId: int("bookId").notNull(),
-  kind: mysqlEnum("kind", ["manuscript", "report"]).notNull(),
+  kind: mysqlEnum("kind", ["manuscript", "pdf", "epub", "report"]).notNull(),
   filename: varchar("filename", { length: 255 }).notNull(),
   fileKey: text("fileKey").notNull(),
   fileUrl: text("fileUrl").notNull(),

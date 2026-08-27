@@ -40,3 +40,12 @@
 - [x] Testar criação de livro com DOCX válido, inválido e acima do limite
 - [x] Testar sucesso e falha da análise editorial
 - [x] Testar atualização de sugestões e geração das versões exportadas
+
+## Evolução solicitada em 27/08/2026
+
+- [x] Criar habilidade reutilizável do processo BookRevise com /skill-creator
+- [x] Adicionar exportação de manuscritos revisados em PDF
+- [x] Adicionar exportação de manuscritos revisados em EPUB
+- [x] Implementar histórico de versões no dashboard
+- [x] Adicionar progresso visual durante a análise editorial da IA
+- [ ] Validar habilidade, testes, layout e sincronização da nova versão

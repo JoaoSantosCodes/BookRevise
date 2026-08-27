@@ -41,6 +41,11 @@ export async function getBookForUser(bookId: number, userId: number) {
   const rows = await db.select().from(books).where(and(eq(books.id, bookId), eq(books.userId, userId))).limit(1); return rows[0];
 }
 
+export async function listVersions(bookId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(bookVersions).where(eq(bookVersions.bookId, bookId)).orderBy(desc(bookVersions.createdAt));
+}
+
 export async function listIssues(bookId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(reviewIssues).where(eq(reviewIssues.bookId, bookId)).orderBy(desc(reviewIssues.createdAt));

@@ -1,0 +1,1 @@
+ALTER TABLE `bookVersions` MODIFY COLUMN `kind` enum('manuscript','pdf','epub','report') NOT NULL;
