@@ -143,7 +143,7 @@
 - [x] Revisar layout desktop/mobile, hierarquia visual e acessibilidade
 - [x] Otimizar performance de diff, bundle, queries e renderização
 - [x] Validar testes, build, logs e screenshots após as melhorias
-- [ ] Sincronizar e salvar a versão auditada
+- [x] Sincronizar e salvar a versão auditada
 - [ ] Validar visualmente o fluxo autenticado completo em desktop e mobile
 - [x] Aplicar e validar code-splitting/manualChunks para reduzir o bundle
 - [x] Documentar otimizações de queries e renderização do diff com evidência
