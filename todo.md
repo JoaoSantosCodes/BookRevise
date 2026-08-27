@@ -123,6 +123,14 @@
 - [x] Adicionar botão para restaurar atalhos padrão
 - [x] Testar, validar visualmente, sincronizar e salvar a nova versão
 - [x] Incluir testes unitários do visualizador de diff na configuração do Vitest
-- [ ] Sincronizar esta rodada de preview/loading/reset com a branch principal do GitHub
-- [ ] Salvar um novo checkpoint após as mudanças desta rodada
-- [ ] Validar manualmente o fluxo autenticado de geração e pré-visualização do PDF do diff
+- [x] Sincronizar esta rodada de preview/loading/reset com a branch principal do GitHub
+- [x] Salvar um novo checkpoint após as mudanças desta rodada
+- [x] Validar manualmente o fluxo autenticado de geração e pré-visualização do PDF do diff (confirmado pelo usuário como funcionando)
+
+## Evolução solicitada em 27/08/2026 — escala do diff, E2E e anotações
+
+- [x] Implementar paginação para diffs extensos com navegação e contagem claras
+- [x] Criar teste E2E autenticado usando um arquivo DOCX real, cobrindo upload, geração de versões, histórico, diff e preview PDF
+- [x] Permitir comentários e destaques associados a trechos no modal do PDF, com persistência autenticada por versão
+- [x] Investigar por que o projeto não aparece no Vercel e documentar o diagnóstico
+- [ ] Testar, validar visualmente, sincronizar e salvar a nova versão

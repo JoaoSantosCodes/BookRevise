@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1787852974560,
+      "tag": "0000_woozy_shinobi_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1787853234058,
+      "tag": "0001_absent_forge",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787853531085,
+      "tag": "0002_special_metal_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787854222717,
+      "tag": "0003_same_forgotten_one",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1787854814354,
+      "tag": "0004_dapper_tenebrous",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1787856451645,
+      "tag": "0005_redundant_post",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1787858624440,
+      "tag": "0006_redundant_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787863179351,
+      "tag": "0007_nervous_starjammers",
+      "breakpoints": true
+    }
+  ]
+}

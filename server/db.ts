@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { bookVersions, books, InsertUser, reviewIssues, reviewJobs, users } from "../drizzle/schema";
+import { bookVersions, books, diffAnnotations, InsertUser, reviewIssues, reviewJobs, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -61,6 +61,21 @@ export async function listIssues(bookId: number) {
   return db.select().from(reviewIssues).where(eq(reviewIssues.bookId, bookId)).orderBy(desc(reviewIssues.createdAt));
 }
 
+export async function listDiffAnnotations(userId: number, bookId: number, versionId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(diffAnnotations).where(and(eq(diffAnnotations.userId, userId), eq(diffAnnotations.bookId, bookId), eq(diffAnnotations.versionId, versionId))).orderBy(desc(diffAnnotations.createdAt));
+}
+
+export async function createDiffAnnotation(input: typeof diffAnnotations.$inferInsert) {
+  const db = await getDb(); if (!db) throw new Error("Banco indisponível");
+  const result = await db.insert(diffAnnotations).values(input); return Number(result[0].insertId);
+}
+
+export async function deleteDiffAnnotation(userId: number, id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(diffAnnotations).where(and(eq(diffAnnotations.id, id), eq(diffAnnotations.userId, userId)));
+}
+
 export async function enqueueReview(bookId: number) { const db = await getDb(); if (!db) throw new Error("Banco indisponível"); const result = await db.insert(reviewJobs).values({ bookId, status: "queued" }); return Number(result[0].insertId); }
 
 export async function getReviewJobForBook(bookId: number) { const db = await getDb(); if (!db) return undefined; const rows = await db.select().from(reviewJobs).where(eq(reviewJobs.bookId, bookId)).orderBy(desc(reviewJobs.createdAt)).limit(1); return rows[0]; }
@@ -79,4 +94,4 @@ export async function updateIssue(issueId: number, bookId: number, status: "acce
   await db.update(reviewIssues).set({ status, editedText: editedText ?? null }).where(and(eq(reviewIssues.id, issueId), eq(reviewIssues.bookId, bookId)));
 }
 
-export { bookVersions, books, reviewIssues, reviewJobs };
+export { bookVersions, books, diffAnnotations, reviewIssues, reviewJobs };

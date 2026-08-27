@@ -80,4 +80,18 @@ export type InsertUser = typeof users.$inferInsert;
 export type Book = typeof books.$inferSelect;
 export type ReviewIssue = typeof reviewIssues.$inferSelect;
 export type BookVersion = typeof bookVersions.$inferSelect;
+export const diffAnnotations = mysqlTable("diffAnnotations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  bookId: int("bookId").notNull(),
+  versionId: int("versionId").notNull(),
+  kind: mysqlEnum("kind", ["highlight", "comment"]).notNull(),
+  excerpt: text("excerpt").notNull(),
+  note: text("note"),
+  color: varchar("color", { length: 16 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export type ReviewJob = typeof reviewJobs.$inferSelect;
+export type DiffAnnotation = typeof diffAnnotations.$inferSelect;
