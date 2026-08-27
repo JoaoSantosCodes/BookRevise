@@ -89,3 +89,11 @@
 - [x] Implementar reordenação touch-first com pointer events e alvo visual de inserção
 - [x] Validar visualmente a versão final em desktop e mobile após o ajuste touch
 - [x] Sincronizar esta rodada com o GitHub e salvar checkpoint final após o push
+
+## Evolução solicitada em 27/08/2026 — leitura avançada do diff
+
+- [x] Atualizar a habilidade reutilizável com copiar diagnóstico, swipe e tela cheia
+- [x] Adicionar botão para copiar o motivo detalhado da falha
+- [x] Implementar swipe para navegar entre alterações do diff em mobile
+- [x] Adicionar modo de tela cheia ao visualizador de diff
+- [x] Testar, validar visualmente, sincronizar e salvar a nova versão
